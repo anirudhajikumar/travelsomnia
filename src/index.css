@@ -1,0 +1,377 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+/* ─── Base ──────────────────────────────────────────────────────────── */
+
+* {
+  margin: 0;
+  padding: 0;
+  box-sizing: border-box;
+  -webkit-tap-highlight-color: transparent;
+}
+
+:focus-visible {
+  outline: 2px solid #FF6666;
+  outline-offset: 3px;
+}
+
+html, body, #root {
+  width: 100%;
+  height: 100%;
+  overflow: hidden;
+  font-family: 'Inter', system-ui, -apple-system, sans-serif;
+  background: #F3EED9;
+  color: #713432;
+  transition: background-color 0.3s ease, color 0.3s ease;
+}
+
+html.dark, html.dark body, html.dark #root {
+  background: #2B2E3B;
+  color: #D8DCE4;
+}
+
+/* ─── Map ───────────────────────────────────────────────────────────── */
+
+.map-container {
+  position: absolute;
+  inset: 0;
+  z-index: 0;
+}
+
+.map-container .maplibregl-map {
+  width: 100% !important;
+  height: 100% !important;
+}
+
+/* True Figma design styling directly in vector tiles */
+.map-warm .maplibregl-canvas {
+  filter: none;
+}
+
+/* Dark map colors are authored directly in the vector style. */
+.map-dark .maplibregl-canvas {
+  filter: none;
+}
+
+.maplibregl-ctrl-bottom-left {
+  display: none !important;
+}
+
+/* ─── Current location marker ───────────────────────────────────────── */
+
+.loc-marker {
+  position: relative;
+  width: 22px;
+  height: 22px;
+}
+
+.loc-dot {
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  width: 16px;
+  height: 16px;
+  background: #FF6666;
+  border: 2.5px solid #fff;
+  border-radius: 50%;
+  transform: translate(-50%, -50%);
+  z-index: 2;
+  box-shadow: 0 0 8px rgba(255, 102, 102, 0.4);
+}
+
+html.dark .loc-dot {
+  background: #FF8373;
+  box-shadow: 0 0 8px rgba(255, 131, 115, 0.4);
+}
+
+html.dark .loc-pulse {
+  background: rgba(255, 131, 115, 0.18);
+}
+
+html.dark .dark-accent-stroke {
+  stroke: #FF8373;
+}
+
+.loc-pulse {
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  width: 50px;
+  height: 50px;
+  background: rgba(255, 102, 102, 0.18);
+  border-radius: 50%;
+  transform: translate(-50%, -50%);
+  animation: locPulse 2.5s ease-out infinite;
+}
+
+@keyframes locPulse {
+  0%   { transform: translate(-50%, -50%) scale(0.4); opacity: 1; }
+  100% { transform: translate(-50%, -50%) scale(2.2); opacity: 0; }
+}
+
+/* ─── Destination pin ───────────────────────────────────────────────── */
+
+.dest-pin {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  animation: pinDrop 0.6s cubic-bezier(0.34, 1.56, 0.64, 1);
+  cursor: pointer;
+}
+
+.pin-body {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  animation: pinBob 3.2s ease-in-out 0.6s infinite;
+}
+
+.pin-head {
+  width: 36px;
+  height: 36px;
+  background: #713432;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  box-shadow:
+    0 0 0 3px rgba(113, 52, 50, 0.15),
+    0 8px 16px rgba(113, 52, 50, 0.35);
+  position: relative;
+  z-index: 2;
+}
+
+html.dark .pin-head,
+html.dark .pin-stem {
+  background: #D0807A;
+}
+
+.pin-ring {
+  width: 20px;
+  height: 20px;
+  background: #ffffff;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.pin-dot {
+  width: 10px;
+  height: 10px;
+  background: #FF6666;
+  border-radius: 50%;
+}
+
+html.dark .pin-dot {
+  background: #FF8373;
+}
+
+.pin-stem {
+  width: 3px;
+  height: 14px;
+  background: #713432;
+  border-radius: 0 0 2px 2px;
+  margin-top: -2px;
+}
+
+.pin-shadow {
+  width: 14px;
+  height: 5px;
+  background: rgba(113, 52, 50, 0.25);
+  border-radius: 50%;
+  margin-top: 1px;
+}
+
+@keyframes pinDrop {
+  0%   { transform: translateY(-40px) scale(0.5); opacity: 0; }
+  60%  { transform: translateY(4px) scale(1.05); opacity: 1; }
+  80%  { transform: translateY(-2px) scale(0.98); }
+  100% { transform: translateY(0) scale(1); }
+}
+
+@keyframes pinBob {
+  0%, 100% { transform: translateY(0); }
+  50% { transform: translateY(-4px); }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  *,
+  *::before,
+  *::after {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    scroll-behavior: auto !important;
+    transition-duration: 0.01ms !important;
+  }
+}
+
+/* ─── Alarm border ──────────────────────────────────────────────────── */
+
+.alarm-border {
+  position: fixed;
+  inset: 0;
+  pointer-events: none;
+  z-index: 200;
+  transition: box-shadow 1s ease, border-color 1s ease;
+  border: 0 solid transparent;
+  border-radius: 0;
+}
+
+.alarm-border[data-level="green"] {
+  box-shadow: inset 0 0 40px rgba(76, 175, 80, 0.25);
+}
+.alarm-border[data-level="yellow"] {
+  box-shadow: inset 0 0 50px rgba(255, 193, 7, 0.3);
+}
+.alarm-border[data-level="orange"] {
+  box-shadow: inset 0 0 60px rgba(255, 152, 0, 0.4);
+  animation: borderGlowOrange 2s ease-in-out infinite;
+}
+.alarm-border[data-level="red"] {
+  box-shadow: inset 0 0 80px rgba(255, 102, 102, 0.5);
+  animation: borderGlowRed 1.2s ease-in-out infinite;
+}
+
+@keyframes borderGlowOrange {
+  0%, 100% { box-shadow: inset 0 0 50px rgba(255, 152, 0, 0.3); }
+  50%      { box-shadow: inset 0 0 80px rgba(255, 152, 0, 0.55); }
+}
+
+@keyframes borderGlowRed {
+  0%, 100% { box-shadow: inset 0 0 60px rgba(255, 102, 102, 0.4); }
+  50%      { box-shadow: inset 0 0 100px rgba(255, 102, 102, 0.7); }
+}
+
+/* ─── Bottom sheet ──────────────────────────────────────────────────── */
+
+.bottom-sheet {
+  position: fixed;
+  bottom: 0;
+  left: 0;
+  right: 0;
+  z-index: 50;
+  background: #F3EED9;
+  border-radius: 28px 28px 0 0;
+  box-shadow: 0 -8px 36px rgba(113, 52, 50, 0.16);
+  max-height: 82vh;
+  overflow-y: auto;
+  overscroll-behavior: contain;
+  animation: slideUp 0.4s cubic-bezier(0.16, 1, 0.3, 1);
+  border-top: 1px solid rgba(213, 206, 186, 0.6);
+  transition: background-color 0.3s ease, border-color 0.3s ease;
+}
+
+html.dark .bottom-sheet {
+  background: #1C1F26;
+  border-top: 1px solid rgba(61, 87, 111, 0.65);
+  box-shadow: 0 -8px 40px rgba(0, 0, 0, 0.68);
+}
+
+.bottom-sheet::-webkit-scrollbar { width: 0; }
+
+.sheet-handle {
+  width: 36px;
+  height: 4px;
+  background: #D5CEBA;
+  border-radius: 2px;
+  margin: 12px auto 8px;
+  transition: background-color 0.3s ease;
+}
+
+html.dark .sheet-handle {
+  background: #526B82;
+}
+
+/* ─── Search overlay ────────────────────────────────────────────────── */
+
+.search-overlay {
+  position: fixed;
+  inset: 0;
+  z-index: 100;
+  background: rgba(243, 238, 217, 0.96);
+  backdrop-filter: blur(12px);
+  animation: fadeIn 0.25s ease-out;
+  transition: background-color 0.3s ease;
+}
+
+html.dark .search-overlay {
+  background: rgba(28, 31, 38, 0.98);
+}
+
+@keyframes fadeIn {
+  from { opacity: 0; }
+  to   { opacity: 1; }
+}
+
+/* ─── Arrival overlay ───────────────────────────────────────────────── */
+
+.arrival-overlay {
+  position: fixed;
+  inset: 0;
+  z-index: 150;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  background: rgba(113, 52, 50, 0.92);
+  backdrop-filter: blur(16px);
+  animation: fadeIn 0.5s ease-out;
+}
+
+html.dark .arrival-overlay {
+  background: rgba(28, 31, 38, 0.94);
+}
+
+.arrival-ripple {
+  position: absolute;
+  width: 200px;
+  height: 200px;
+  border: 2px solid rgba(255, 255, 255, 0.3);
+  border-radius: 50%;
+  animation: arrivalRipple 2s ease-out infinite;
+}
+.arrival-ripple:nth-child(2) { animation-delay: 0.5s; }
+.arrival-ripple:nth-child(3) { animation-delay: 1s; }
+
+@keyframes arrivalRipple {
+  0%   { transform: scale(0.5); opacity: 1; }
+  100% { transform: scale(3); opacity: 0; }
+}
+
+/* ─── Journey overlay ───────────────────────────────────────────────── */
+
+.journey-dimmed {
+  background: rgba(0, 0, 0, 0.7) !important;
+}
+
+/* ─── Radius zone animations on map ─────────────────────────────────── */
+
+.radius-pulse {
+  animation: radiusPulse 3s ease-out infinite;
+}
+
+@keyframes radiusPulse {
+  0%   { opacity: 0.4; }
+  50%  { opacity: 0.15; }
+  100% { opacity: 0.4; }
+}
+
+/* ─── Utilities ─────────────────────────────────────────────────────── */
+
+.text-shadow-sm {
+  text-shadow: 0 1px 3px rgba(0,0,0,0.12);
+}
+
+/* Smooth number transitions */
+.distance-value {
+  transition: all 0.4s cubic-bezier(0.16, 1, 0.3, 1);
+}
+
+/* Safe area padding */
+@supports (padding-bottom: env(safe-area-inset-bottom)) {
+  .safe-bottom {
+    padding-bottom: max(16px, env(safe-area-inset-bottom));
+  }
+}
