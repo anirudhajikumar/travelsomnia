@@ -1,5 +1,6 @@
 import { useEffect, useRef, useCallback, useState } from 'react';
 import * as maplibregl from 'maplibre-gl';
+import maplibreWorkerUrl from 'maplibre-gl/dist/maplibre-gl-worker.mjs?worker&url';
 import 'maplibre-gl/dist/maplibre-gl.css';
 import { useAppState } from '../hooks/useAppState';
 import { FIGMA_LIGHT_STYLE } from '../services/mapStyle';
@@ -7,6 +8,8 @@ import { FIGMA_DARK_STYLE } from '../services/mapStyleDark';
 
 const DEFAULT_CENTER: [number, number] = [77.5946, 12.9716]; // Bangalore fallback
 const DEFAULT_ZOOM = 14;
+
+maplibregl.setWorkerUrl(maplibreWorkerUrl);
 
 export default function MapView() {
   const { state } = useAppState();
