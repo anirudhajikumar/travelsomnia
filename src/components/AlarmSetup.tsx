@@ -2,7 +2,7 @@ import { useState } from 'react';
 import { useAppState } from '../hooks/useAppState';
 import { formatDistance } from '../services/distance';
 import { generateAlarmId } from '../services/alarm';
-import type { AlarmIntensity, AlarmLevel } from '../types';
+import type { AlarmIntensity, AlarmLevel, VibrationPreset } from '../types';
 
 /* ─── Presets matching Figma designs ──────────────────────────────── */
 const SINGLE_DISTANCES = [200, 500, 1000, 1500, 2000, 2500];
@@ -34,6 +34,13 @@ function getIntensityLabel(intensity: AlarmIntensity): string {
     case 'critical': return 'Max intensity';
   }
 }
+
+const VIBRATION_PRESETS: { key: VibrationPreset; label: string; duration: string }[] = [
+  { key: 'gentle', label: 'Gentle Buzz', duration: '1 second' },
+  { key: 'medium', label: 'Medium Pulse', duration: '2.5 seconds' },
+  { key: 'strong', label: 'Strong Shake', duration: '8 seconds' },
+  { key: 'max', label: 'Max Intensity', duration: '15 seconds' },
+];
 
 /* ═══════════════════════════════════════════════════════════════════ */
 /* Main Alarm Setup Bottom Sheet                                       */
@@ -122,6 +129,8 @@ export default function AlarmSetup() {
         {/* ── Tab Content ────────────────────────────────────── */}
         {state.alarmMode === 'single' ? <SingleAlarmMode /> : <ProgressiveAlarmMode />}
 
+        <VibrationSettings />
+
         {/* ── Start Journey Button ───────────────────────────── */}
         <p className="mt-4 text-center text-[12px] leading-relaxed text-[#798897] dark:text-[#A6B1BF]">
           Location is required to measure distance and trigger alarms. It is requested when you start and used only while your journey is active.
@@ -142,6 +151,48 @@ export default function AlarmSetup() {
         >
           Start Journey →
         </button>
+      </div>
+    </div>
+  );
+}
+
+function VibrationSettings() {
+  const { state, dispatch, testVibration } = useAppState();
+
+  return (
+    <div className="mt-5 pt-4 border-t border-[#D5CEBA] dark:border-[#3D4658]">
+      <div className="flex items-center justify-between mb-3">
+        <p className="text-[11px] font-bold text-[#798897] dark:text-[#A6B1BF] uppercase tracking-wider">
+          Destination vibration
+        </p>
+        <button
+          type="button"
+          onClick={testVibration}
+          className="text-[12px] font-bold text-[#FF6666] active:scale-95 transition-transform"
+        >
+          Test vibration
+        </button>
+      </div>
+      <div className="grid grid-cols-2 gap-2">
+        {VIBRATION_PRESETS.map(({ key, label, duration }) => {
+          const selected = state.vibrationPreset === key;
+          return (
+            <button
+              key={key}
+              type="button"
+              onClick={() => dispatch({ type: 'SET_VIBRATION_PRESET', preset: key })}
+              aria-pressed={selected}
+              className={`min-h-12 rounded-xl px-3 py-2 text-left transition-all active:scale-[0.98] ${selected
+                ? 'bg-[#713432] text-white shadow-md shadow-[#713432]/25'
+                : 'bg-[#E8E1CB] dark:bg-[#252A38] text-[#713432] dark:text-[#D8DCE4] border border-transparent hover:bg-[#DDD5BD] dark:hover:bg-[#2F364F]'}`}
+            >
+              <span className="block text-[12px] font-bold leading-tight">{label}</span>
+              <span className={`block text-[11px] mt-0.5 ${selected ? 'text-white/70' : 'text-[#798897] dark:text-[#A6B1BF]'}`}>
+                {duration}
+              </span>
+            </button>
+          );
+        })}
       </div>
     </div>
   );

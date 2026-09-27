@@ -1,4 +1,4 @@
-import type { AlarmLevel, AlarmMode } from '../types';
+import type { AlarmLevel, AlarmMode, VibrationPreset } from '../types';
 
 const KEY = {
   MODE: 'ts_alarm_mode',
@@ -6,6 +6,7 @@ const KEY = {
   PROG: 'ts_progressive_alarms',
   AUDIO: 'ts_audio_enabled',
   AUDIO_MODE: 'ts_audio_mode',
+  VIBRATION_PRESET: 'ts_vibration_preset',
   DARK_MODE: 'ts_dark_mode',
 } as const;
 
@@ -77,6 +78,14 @@ export const storage = {
       enabled: localStorage.getItem(KEY.AUDIO) === 'true',
       mode: mode === 'headphones-speaker' || mode === 'loud' ? mode : 'headphones',
     };
+  },
+
+  saveVibrationPreset(preset: VibrationPreset) {
+    localStorage.setItem(KEY.VIBRATION_PRESET, preset);
+  },
+  loadVibrationPreset(): VibrationPreset {
+    const preset = localStorage.getItem(KEY.VIBRATION_PRESET);
+    return preset === 'medium' || preset === 'strong' || preset === 'max' ? preset : 'gentle';
   },
 
   saveDarkMode(enabled: boolean) {

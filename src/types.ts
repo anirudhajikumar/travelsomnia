@@ -1,6 +1,7 @@
 // ─── Core Types ─────────────────────────────────────────────────────
 
 export type AlarmIntensity = 'gentle' | 'medium' | 'strong' | 'critical';
+export type VibrationPreset = 'gentle' | 'medium' | 'strong' | 'max';
 
 export interface Coordinates {
   lat: number;
@@ -62,6 +63,7 @@ export interface AppState {
   darkMode: boolean;
   audioEnabled: boolean;
   audioMode: 'headphones' | 'headphones-speaker' | 'loud';
+  vibrationPreset: VibrationPreset;
 }
 
 export type AppAction =
@@ -85,7 +87,8 @@ export type AppAction =
   | { type: 'TOGGLE_DARK_MODE' }
   | { type: 'SET_DARK_MODE'; enabled: boolean }
   | { type: 'SET_AUDIO_ENABLED'; enabled: boolean }
-  | { type: 'SET_AUDIO_MODE'; mode: 'headphones' | 'headphones-speaker' | 'loud' };
+  | { type: 'SET_AUDIO_MODE'; mode: 'headphones' | 'headphones-speaker' | 'loud' }
+  | { type: 'SET_VIBRATION_PRESET'; preset: VibrationPreset };
 
 // ─── Alarm check result ─────────────────────────────────────────────
 

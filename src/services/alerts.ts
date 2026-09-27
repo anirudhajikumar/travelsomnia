@@ -1,4 +1,4 @@
-import type { AlarmIntensity } from '../types';
+import type { AlarmIntensity, VibrationPreset } from '../types';
 
 /**
  * Manages vibration (Web Vibration API) and audio (Web Audio API) alerts.
@@ -7,6 +7,13 @@ import type { AlarmIntensity } from '../types';
 class AlertsManager {
   private audioCtx: AudioContext | null = null;
   private vibrating = false;
+
+  private readonly vibrationDurations: Record<VibrationPreset, number> = {
+    gentle: 1000,
+    medium: 2500,
+    strong: 8000,
+    max: 15000,
+  };
 
   private ctx(): AudioContext {
     if (!this.audioCtx) this.audioCtx = new AudioContext();
@@ -35,6 +42,15 @@ class AlertsManager {
 
   canVibrate(): boolean {
     return 'vibrate' in navigator;
+  }
+
+  vibratePreset(preset: VibrationPreset): void {
+    if (!this.canVibrate()) return;
+    this.stopVibration();
+    this.vibrating = true;
+    const duration = this.vibrationDurations[preset];
+    navigator.vibrate(duration);
+    setTimeout(() => { this.vibrating = false; }, duration);
   }
 
   vibrate(intensity: AlarmIntensity): void {
@@ -82,28 +98,25 @@ class AlertsManager {
     if (opts.audio) this.playAlarmSound(intensity, opts.volume ?? 0.5);
   }
 
-  /** Strong multi-modal arrival alert. */
-  triggerArrival(): void {
-    if (this.canVibrate()) {
-      navigator.vibrate([500, 200, 500, 200, 500, 200, 1000, 300, 1000, 300, 1000]);
-    }
-    try {
-      const c = this.ctx();
-      [523.25, 659.25, 783.99, 1046.5].forEach((freq, i) => {
-        const t = c.currentTime + i * 0.2;
-        const osc = c.createOscillator();
-        const gain = c.createGain();
-        osc.connect(gain);
-        gain.connect(c.destination);
-        osc.frequency.setValueAtTime(freq, t);
-        osc.type = 'sine';
-        gain.gain.setValueAtTime(0, t);
-        gain.gain.linearRampToValueAtTime(0.4, t + 0.05);
-        gain.gain.exponentialRampToValueAtTime(0.01, t + 0.5);
-        osc.start(t);
-        osc.stop(t + 0.5);
+  /** Notify the user that the destination has been reached. */
+  triggerArrival(destinationName: string, preset: VibrationPreset, soundEnabled: boolean): void {
+    this.vibratePreset(preset);
+    if (soundEnabled) this.playAlarmSound('critical');
+
+    if ('Notification' in window && Notification.permission === 'granted') {
+      new Notification('Destination reached', {
+        body: `You have arrived at ${destinationName}.`,
+        tag: 'travelsomnia-destination',
       });
-    } catch { /* ignore */ }
+    }
+  }
+
+  async requestNotificationPermission(): Promise<void> {
+    if ('Notification' in window && Notification.permission === 'default') {
+      try {
+        await Notification.requestPermission();
+      } catch { /* ignore notification permission errors */ }
+    }
   }
 
   dispose(): void {

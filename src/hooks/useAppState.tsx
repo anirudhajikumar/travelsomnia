@@ -33,6 +33,7 @@ const init: AppState = {
   darkMode: false,
   audioEnabled: false,
   audioMode: 'headphones',
+  vibrationPreset: 'gentle',
 };
 
 /* ─── reducer ───────────────────────────────────────────────────────── */
@@ -112,6 +113,8 @@ function reducer(s: AppState, a: AppAction): AppState {
       return { ...s, audioEnabled: a.enabled };
     case 'SET_AUDIO_MODE':
       return { ...s, audioMode: a.mode };
+    case 'SET_VIBRATION_PRESET':
+      return { ...s, vibrationPreset: a.preset };
     default:
       return s;
   }
@@ -125,6 +128,7 @@ interface Ctx {
   selectDestination: (d: Destination) => void;
   startJourney: () => Promise<void>;
   endJourney: () => void;
+  testVibration: () => void;
   toggleDarkMode: () => void;
 }
 
@@ -137,6 +141,7 @@ export function AppProvider({ children }: { children: React.ReactNode }) {
     const single = storage.loadSingleAlarm();
     const prog = storage.loadProgressiveAlarms();
     const audio = storage.loadAudioSettings();
+    const vibrationPreset = storage.loadVibrationPreset();
     const dark = storage.loadDarkMode();
     return {
       ...initial,
@@ -145,6 +150,7 @@ export function AppProvider({ children }: { children: React.ReactNode }) {
       progressiveAlarms: prog,
       audioEnabled: audio.enabled,
       audioMode: audio.mode as AppState['audioMode'],
+      vibrationPreset,
       darkMode: dark,
     };
   });
@@ -156,6 +162,7 @@ export function AppProvider({ children }: { children: React.ReactNode }) {
   useEffect(() => { storage.saveSingleAlarm(state.singleAlarm); }, [state.singleAlarm]);
   useEffect(() => { storage.saveProgressiveAlarms(state.progressiveAlarms); }, [state.progressiveAlarms]);
   useEffect(() => { storage.saveAudioSettings(state.audioEnabled, state.audioMode); }, [state.audioEnabled, state.audioMode]);
+  useEffect(() => { storage.saveVibrationPreset(state.vibrationPreset); }, [state.vibrationPreset]);
   useEffect(() => {
     storage.saveDarkMode(state.darkMode);
     if (state.darkMode) {
@@ -212,10 +219,14 @@ export function AppProvider({ children }: { children: React.ReactNode }) {
       }
       if (result.currentDistance <= 50) {
         dispatch({ type: 'ARRIVE' });
-        alertsManager.triggerArrival();
+        alertsManager.triggerArrival(
+          state.destination.name,
+          state.vibrationPreset,
+          state.audioEnabled
+        );
       }
     }
-  }, [state.currentLocation, state.destination, state.phase, state.journey, state.audioEnabled]);
+  }, [state.currentLocation, state.destination, state.phase, state.journey, state.audioEnabled, state.vibrationPreset]);
 
   const selectDestination = useCallback((dest: Destination) => {
     dispatch({ type: 'SET_DESTINATION', destination: dest });
@@ -232,6 +243,7 @@ export function AppProvider({ children }: { children: React.ReactNode }) {
     }
 
     try {
+      void alertsManager.requestNotificationPermission();
       const coords = await locationService.getCurrentPosition();
       dispatch({ type: 'SET_CURRENT_LOCATION', location: coords });
       dispatch({ type: 'START_JOURNEY' });
@@ -249,6 +261,10 @@ export function AppProvider({ children }: { children: React.ReactNode }) {
     dispatch({ type: 'END_JOURNEY' });
   }, []);
 
+  const testVibration = useCallback(() => {
+    alertsManager.vibratePreset(state.vibrationPreset);
+  }, [state.vibrationPreset]);
+
   const toggleDarkMode = useCallback(() => {
     dispatch({ type: 'TOGGLE_DARK_MODE' });
   }, []);
@@ -261,6 +277,7 @@ export function AppProvider({ children }: { children: React.ReactNode }) {
         selectDestination,
         startJourney,
         endJourney,
+        testVibration,
         toggleDarkMode,
       }}
     >

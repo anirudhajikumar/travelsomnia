@@ -7,7 +7,6 @@ import JourneyView from './components/JourneyView';
 import ArrivalOverlay from './components/ArrivalOverlay';
 import AlarmBorder from './components/AlarmBorder';
 import PrivacyPolicy from './components/PrivacyPolicy';
-import { alertsManager } from './services/alerts';
 import type { Destination } from './types';
 
 // Presets matching the Figma design (Downtown Plaza 2.5 km)
@@ -96,17 +95,16 @@ function MainContent() {
             </div>
 
             <div className="flex items-center gap-2">
-              {/* Sound Test Button */}
+              {/* Sound toggle */}
               <button
-                onClick={() => {
-                  alertsManager.triggerAlert('medium', { vibration: true, audio: true });
-                }}
-                title="Test Vibration & Sound Alert"
+                onClick={() => dispatch({ type: 'SET_AUDIO_ENABLED', enabled: !state.audioEnabled })}
+                title={state.audioEnabled ? 'Turn sound off' : 'Turn sound on'}
                 className="w-8 h-8 rounded-full bg-[#F3EED9] dark:bg-[#1B1D24] border border-[#D5CEBA] dark:border-[#3D4658] text-[#713432] dark:text-[#D8DCE4]
                            flex items-center justify-center text-xs shadow-xs active:scale-95 transition-all"
-                aria-label="Test Alert"
+                aria-label={state.audioEnabled ? 'Turn sound off' : 'Turn sound on'}
+                aria-pressed={state.audioEnabled}
               >
-                🔔
+                {state.audioEnabled ? '🔔' : '🔕'}
               </button>
 
               {/* Dark Mode Toggle Button */}
